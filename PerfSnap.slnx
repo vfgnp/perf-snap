@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PerfSnap/PerfSnap.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PerfSnap.Tests/PerfSnap.Tests.csproj" />
+  </Folder>
+</Solution>

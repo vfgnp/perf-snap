@@ -1,0 +1,16 @@
+# 個人用の Claude Code 設定（共有しない）
+.claude/settings.local.json
+
+# 秘密情報
+.env
+.env.*
+
+# 取得データ（PC 内の情報を含むため入れない）
+*.etl
+*.blg
+output/
+
+# ビルド成果物
+bin/
+obj/
+publish/

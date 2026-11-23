@@ -1,0 +1,53 @@
+name: CI
+
+# push / プルリクエストで自動テストを実行する。
+# v で始まるタグを push したときは、配布用 exe を作って Releases に添付する。
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: 自動テスト
+        run: dotnet test PerfSnap.slnx -c Release --logger "console;verbosity=normal"
+
+  release:
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: 配布用 exe の作成
+        shell: pwsh
+        run: |
+          $version = '${{ github.ref_name }}'.TrimStart('v')
+          $numeric = ($version -split '-')[0]
+          dotnet publish src/PerfSnap -c Release -o publish -p:Version=$version -p:FileVersion=$numeric -p:AssemblyVersion=$numeric
+          $hash = (Get-FileHash publish/PerfSnap.exe -Algorithm SHA256).Hash
+          "$hash  PerfSnap.exe" | Out-File publish/PerfSnap.exe.sha256 -Encoding ascii
+      - name: Releases に添付
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $flags = @('--generate-notes', '--title', "PerfSnap $tag")
+          if ($tag -match '-') { $flags += '--prerelease' }
+          gh release create $tag publish/PerfSnap.exe publish/PerfSnap.exe.sha256 @flags

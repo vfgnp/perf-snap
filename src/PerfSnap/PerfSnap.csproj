@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>PerfSnap</RootNamespace>
+    <AssemblyName>PerfSnap</AssemblyName>
+    <Version>1.0.0</Version>
+    <Product>PerfSnap</Product>
+    <Description>操作が重くなったときに調査用データを保存するタスクトレイ常駐ツール</Description>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <!-- 省メモリ・低負荷（要件 N-01, N-02） -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <TieredPGO>true</TieredPGO>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 同梱の独自プロファイル（scripts/build-wprp.ps1 で生成） -->
+    <EmbeddedResource Include="Resources\PerfSnap.wprp" LogicalName="PerfSnap.wprp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- GC ヒープを小さく保つ（0〜9。大きいほど詰める） -->
+    <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="7" />
+  </ItemGroup>
+
+  <!-- 配布用 exe（dotnet publish のときだけ）：.NET 込みの単一ファイル -->
+  <PropertyGroup Condition="'$(_IsPublishing)' == 'true'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+</Project>
